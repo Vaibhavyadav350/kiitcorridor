@@ -5,6 +5,7 @@ import 'package:kiitcorridor/components/sidemenu.dart';
 import 'package:kiitcorridor/dashboard/dashboard.dart';
 
 import '../color.dart';
+import '../components/students.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
@@ -19,7 +20,7 @@ class MainScreen extends StatelessWidget {
                 child: SideMenu()),
             Expanded(
                 flex: 5,
-                child: DashboardScreen())
+                child: StudentListPage())
           ],
         ),
       ),
