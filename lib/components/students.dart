@@ -1,5 +1,8 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kiitcorridor/components/sidemenu.dart';
 
 class StudentInfo {
   final String id;
@@ -43,6 +46,7 @@ class StudentListPage extends StatefulWidget {
 }
 
 class _StudentListPageState extends State<StudentListPage> {
+
   bool showPaidExperienceOnly = false;
   TextEditingController searchController = TextEditingController();
 
@@ -53,6 +57,7 @@ class _StudentListPageState extends State<StudentListPage> {
         title: Text('Student List'),
         actions: [
           PopupMenuButton(
+            icon: Icon(Icons.filter_list_alt),
             itemBuilder: (context) => [
               PopupMenuItem(
                 child: Row(
