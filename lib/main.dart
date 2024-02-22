@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kiitcorridor/dashboard/dashboard.dart';
 import 'package:kiitcorridor/screens/main_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -48,7 +49,7 @@ class MyApp extends StatelessWidget {
             create: (context) => MenuAppController(),
           ),
         ],
-        child: const MainScreen(),
+        child: const MainScreen(expandedChild: DashboardScreen(),),
       ),
     );
   }
