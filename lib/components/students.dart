@@ -230,8 +230,8 @@ class StudentDetailsPage extends StatelessWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text('Company: ${exp['Company']}', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),),
                     Text('Role: ${exp['Role']}'),
-                    Text('Company: ${exp['Company']}'),
                     Text('Supported Doc: ${exp['SupportedDoc']}'),
                     Text('Description: ${exp['Description']}'),
                     Text('Stipend: ${exp['Stipend']}'),
@@ -251,3 +251,4 @@ class StudentDetailsPage extends StatelessWidget {
     );
   }
 }
+
