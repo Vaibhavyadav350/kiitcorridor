@@ -15,10 +15,6 @@ class _DataScreenState extends State<DataScreen> {
     super.initState();
     fetchSkills();
   }
-
-
-
-
   Future<void> fetchSkills() async {
     DocumentSnapshot docSnap = await FirebaseFirestore.instance
         .collection('StudentInfo')
