@@ -10,6 +10,8 @@ class Posting extends StatefulWidget {
 }
 
 class _PostingState extends State<Posting> {
+  bool BTechPass = false;
+  bool MTechPass = false;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController _jobTitleController = TextEditingController();
@@ -25,10 +27,15 @@ class _PostingState extends State<Posting> {
   TextEditingController _educationRequirementsController =
       TextEditingController();
   TextEditingController _companyCultureController = TextEditingController();
-  TextEditingController _contactInformationController = TextEditingController();
+  TextEditingController _contactInformationPhoneController =
+      TextEditingController();
+  TextEditingController _contactInformationEmailController =
+      TextEditingController();
   TextEditingController _experienceLevelController = TextEditingController();
+
   List<String> _skillsTags = [];
   String _selectedExperienceLevel = "Select Below";
+  String _internshipType = "Select Below";
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
@@ -45,8 +52,10 @@ class _PostingState extends State<Posting> {
         'salary': _salaryController.text,
         'educationRequirements': _educationRequirementsController.text,
         'companyCulture': _companyCultureController.text,
-        'contactInformation': _contactInformationController.text,
+        'contactInformation_Email': _contactInformationEmailController.text,
+        'contactInformation_Phone': _contactInformationPhoneController.text,
         'experienceLevel': _selectedExperienceLevel,
+        'internshipType': _internshipType,
       });
       _jobTitleController.clear();
       _jobDescriptionController.clear();
@@ -59,7 +68,8 @@ class _PostingState extends State<Posting> {
       _salaryController.clear();
       _educationRequirementsController.clear();
       _companyCultureController.clear();
-      _contactInformationController.clear();
+      _contactInformationEmailController.clear();
+      _contactInformationPhoneController.clear();
       setState(() {
         _selectedExperienceLevel = "Select Below";
       });
@@ -135,9 +145,40 @@ class _PostingState extends State<Posting> {
                 },
               ),
               SizedBox(height: 10),
+              Visibility(
+                visible: _selectedExperienceLevel == "Intern",
+                child: DropdownButtonFormField<String>(
+                  value: _internshipType,
+                  onChanged: (newValue) {
+                    setState(() {
+                      _internshipType = newValue!;
+                    });
+                  },
+                  items: [
+                    'Select Below',
+                    'Summer',
+                    'Winter',
+                    'Yearlong',
+                    'Training Program'
+                  ].map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  decoration: InputDecoration(labelText: 'Internship Type'),
+                  validator: (value) {
+                    if (value == 'Select Below') {
+                      return 'Please select the type of internship';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              SizedBox(height: 10),
               TextFormField(
                 controller: _salaryController,
-                decoration: InputDecoration(labelText: 'Salary'),
+                decoration: InputDecoration(labelText: 'Salary/Stipend'),
                 validator: (value) {
                   if (value!.isEmpty) {
                     return 'Please enter salary';
@@ -146,15 +187,19 @@ class _PostingState extends State<Posting> {
                 },
               ),
               SizedBox(height: 10),
-              TextFormField(
-                controller: _durationController,
-                decoration: InputDecoration(labelText: 'Duration (in months)'),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter the duration';
-                  }
-                  return null;
-                },
+              Visibility(
+                visible: _selectedExperienceLevel == 'Intern',
+                child: TextFormField(
+                  controller: _durationController,
+                  decoration:
+                      InputDecoration(labelText: 'Duration (in months)'),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter the duration';
+                    }
+                    return null;
+                  },
+                ),
               ),
               SizedBox(height: 10),
               TextFormField(
@@ -220,6 +265,72 @@ class _PostingState extends State<Posting> {
                 },
               ),
               SizedBox(height: 10),
+              TextFormField(
+                controller: _contactInformationEmailController,
+                decoration:
+                    InputDecoration(labelText: 'Contact Information - Email'),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Please enter valid contact details';
+                  }
+                  RegExp emailRegExp =
+                      RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                  if (!emailRegExp.hasMatch(value)) {
+                    return 'Please enter a valid email address';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 10),
+              TextFormField(
+                controller: _contactInformationPhoneController,
+                decoration:
+                    InputDecoration(labelText: 'Contact Information - Phone'),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Please enter valid contact details';
+                  }
+                  RegExp phoneRegExp = RegExp(r'^[0-9]{10}$');
+                  if (!phoneRegExp.hasMatch(value)) {
+                    return 'Please enter a valid phone number';
+                  }
+                  return null;
+                },
+              ),
+
+              // PopupMenuButton(
+              //   child: Text(
+              //     "Select Eligibilty",
+              //     style: TextStyle(fontSize: 20),
+              //   ), // Display the text as the button
+              //   itemBuilder: (context) => [
+              //     PopupMenuItem(
+              //       child: CheckboxListTile(
+              //         title: Text('BTech Candidates'),
+              //         value: BTechPass,
+              //         onChanged: (value) {
+              //           setState(() {
+              //             BTechPass = value ?? false;
+              //           });
+              //         },
+              //       ),
+              //     ),
+              //     PopupMenuItem(
+              //       child: CheckboxListTile(
+              //         title: Text('MTech Candidates'),
+              //         value: MTechPass,
+              //         onChanged: (value) {
+              //           setState(() {
+              //             MTechPass = value ?? false;
+              //           });
+              //         },
+              //       ),
+              //     ),
+              //   ],
+              // ),
+              SizedBox(
+                height: 10,
+              ),
               ElevatedButton(
                 onPressed: _submitForm,
                 child: Text('Submit'),
