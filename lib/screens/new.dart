@@ -46,7 +46,7 @@ class _DataScreenState extends State<DataScreen> {
       }
 
       //commit check
-
+      //commit check again
       // Extracting skills with levels from competency
       for (var competencyData in competency) {
         List<String> skills = List<String>.from(competencyData['Skills'] ?? []);
