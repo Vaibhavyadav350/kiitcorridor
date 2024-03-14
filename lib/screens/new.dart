@@ -45,7 +45,7 @@ class _DataScreenState extends State<DataScreen> {
         profSkills.addAll(skills);
       }
 
-      ///commit check
+      //commit check
 
       // Extracting skills with levels from competency
       for (var competencyData in competency) {
