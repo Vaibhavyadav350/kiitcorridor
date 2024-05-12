@@ -1,7 +1,10 @@
+// ignore_for_file: curly_braces_in_flow_control_structures
+
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:kiitcorridor/studentLIstView/OnDemandStream.dart';
 
 class StudentInfo {
   final Map<String, dynamic> data;
@@ -111,6 +114,7 @@ class _TitledReportViewState extends State<TitledReportView> {
     'Dummy Filter 2': (false, (si) => si.cgpa > 500),
     'Dummy Filter 3': (false, (si) => si.name.endsWith('9')),
   };
+  (String, int Function(StudentInfo f, StudentInfo s))? sorter;
   TextEditingController searchController = TextEditingController();
   Map<StudentInfo, bool> selection = {};
   StudentInfo? focussedStudent;
@@ -185,52 +189,80 @@ class _TitledReportViewState extends State<TitledReportView> {
                   width: 700,
                   height: 650,
                   child: SingleChildScrollView(
-                    child: StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance.collection("StudentInfo").snapshots(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) return Center(child: CircularProgressIndicator());
+                    child: OnDemandStream(
+                      streamProvider: () => FirebaseFirestore.instance.collection("StudentInfo"),
+                      builder: (context, docs, state, loadMore) {
+                        var sl = docs.map((doc) => StudentInfo.fromFirestore(doc));
+                        filters.keys
+                            // Get filters which are active
+                            .where((e) => filters[e]!.$1)
+                            // Apply those filters
+                            .forEach((e) => sl = sl.where(filters[e]!.$2));
+                        List<StudentInfo> students = sl
+                            // Also apply search bar string thingy
+                            .where((e) => e.somethingSomewhereMatches(searchController.text))
+                            .toList();
+                        // Apply sorter if available
+                        if (sorter != null) students.sort(sorter!.$2);
 
-                          if (snapshot.hasError) return Center(child: Text('Error fetching data'));
+                        selection.keys.where((e) => !students.contains(e)).toList().forEach((e) => selection.remove(e));
+                        students.where((e) => !selection.containsKey(e)).forEach((e) => selection[e] = false);
 
-                          var sl = snapshot.data!.docs.map((doc) => StudentInfo.fromFirestore(doc));
-                          filters.keys
-                              // Get filters which are active
-                              .where((e) => filters[e]!.$1)
-                              // Apply those filters
-                              .forEach((e) => sl = sl.where(filters[e]!.$2));
-                          List<StudentInfo> students = sl
-                              // Also apply search bar string thingy
-                              .where((e) => e.somethingSomewhereMatches(searchController.text))
-                              .toList();
-
-                          selection.keys.where((e) => !students.contains(e)).toList().forEach((e) => selection.remove(e));
-                          students.where((e) => !selection.containsKey(e)).forEach((e) => selection[e] = false);
-
-                          Widget buildCell(String t, StudentInfo si) =>
-                              TableCell(verticalAlignment: TableCellVerticalAlignment.middle, child: GestureDetector(child: Text(t), onTap: () => setState(() => focussedStudent = si)));
-
-                          return Table(
-                              columnWidths: const {
-                                0: FlexColumnWidth(0.3),
-                                1: FlexColumnWidth(1.0),
-                                2: FlexColumnWidth(0.5),
-                                3: FlexColumnWidth(0.5),
-                                4: FlexColumnWidth(0.7),
-                              },
-                              children: [
-                            TableRow(
-                                children: ["", "Name", "Year", "CGPA", "Match"]
-                                    .map((e) => Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0), child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold))))
-                                    .toList()),
-                            ...students.map((e) => TableRow(decoration: BoxDecoration(border: Border(top: Divider.createBorderSide(context, width: 1))), children: [
-                                  Checkbox(value: selection[e]!, onChanged: (value) => setState(() => selection[e] = !selection[e]!)),
-                                  buildCell(e.name, e),
-                                  buildCell(e.year.toString(), e),
-                                  buildCell(e.cgpa.toString(), e),
-                                  buildCell(searchController.text.isEmpty ? "" : e.whatAndWhereDidItMatch(searchController.text), e),
-                                ])),
-                          ]);
-                        }),
+                        Widget buildCell(String t, StudentInfo si) =>
+                            TableCell(verticalAlignment: TableCellVerticalAlignment.middle, child: GestureDetector(child: Text(t), onTap: () => setState(() => focussedStudent = si)));
+                        return Column(
+                          children: [
+                            Table(columnWidths: const {
+                              0: FlexColumnWidth(0.3),
+                              1: FlexColumnWidth(1.0),
+                              2: FlexColumnWidth(0.5),
+                              3: FlexColumnWidth(0.5),
+                              4: FlexColumnWidth(0.7),
+                            }, children: [
+                              TableRow(
+                                  children: List<(String, int Function(StudentInfo f, StudentInfo s))>.of([
+                                (
+                                  "",
+                                  (f, s) => selection[f] == selection[s]
+                                      ? 0
+                                      : selection[f]!
+                                          ? -1
+                                          : 1
+                                ),
+                                ("Name", (f, s) => f.name.compareTo(s.name)),
+                                ("Year", (f, s) => f.year.compareTo(s.year)),
+                                ("CGPA", (f, s) => f.cgpa.compareTo(s.cgpa)),
+                                ("Match", (f, s) => f.year.compareTo(s.year)),
+                              ])
+                                      // .map((e) => Padding(padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0), child: Text(e.$1, style: const TextStyle(fontWeight: FontWeight.bold)))).toList()),
+                                      .map((e) {
+                                return ToggleButtons(
+                                    onPressed: (index) {
+                                      if (sorter == null || sorter!.$1 != e.$1)
+                                        sorter = e;
+                                      else
+                                        sorter = null;
+                                      setState(() {});
+                                    },
+                                    isSelected: [sorter != null && sorter!.$1 == e.$1],
+                                    children: [Text(e.$1)]);
+                              }).toList()),
+                              ...students.map((e) => TableRow(decoration: BoxDecoration(border: Border(top: Divider.createBorderSide(context, width: 1))), children: [
+                                    Checkbox(value: selection[e]!, onChanged: (value) => setState(() => selection[e] = !selection[e]!)),
+                                    buildCell(e.name, e),
+                                    buildCell(e.year.toString(), e),
+                                    buildCell(e.cgpa.toString(), e),
+                                    buildCell(searchController.text.isEmpty ? "" : e.whatAndWhereDidItMatch(searchController.text), e),
+                                  ])),
+                            ]),
+                            TextButton(onPressed: () => loadMore(), child: Text("Load More"))
+                            // state == StreamConnectionStatus.success ? TextButton(onPressed: () => loadMore(), child: Text("Load More")):
+                            //     state == StreamConnectionStatus.waiting? CircularProgressIndicator():
+                            //         Text("Error loading more data!")
+                          ],
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
