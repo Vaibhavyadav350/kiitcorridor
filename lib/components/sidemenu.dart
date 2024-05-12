@@ -3,10 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:kiitcorridor/components/students.dart';
 import 'package:kiitcorridor/dashboard/dashboard.dart';
 import 'package:kiitcorridor/screens/main_screen.dart';
 import 'package:kiitcorridor/screens/postings.dart';
+import 'package:kiitcorridor/studentLIstView/TitledReportView.dart';
 
 class SideMenu extends StatelessWidget {
   const SideMenu({
@@ -46,12 +46,12 @@ class SideMenu extends StatelessWidget {
               },
             ),
             DrwaerListTile(
-              title: "Students List",
+              title: "Students List v2",
               svgSrc: "assets/icons/menu_dashboard.svg",
               press: () {
                 Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => MainScreen(expandedChild: StudentListPage())),
+                MaterialPageRoute(builder: (context) => MainScreen(expandedChild: TitledReportView())),
               );
               },
             ),
