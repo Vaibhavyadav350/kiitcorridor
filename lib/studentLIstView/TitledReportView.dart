@@ -72,16 +72,6 @@ class StudentInfo {
                         : SuperDFS(data, pattern).$2;
   }
 
-  static bool DFS(dynamic stuff, Pattern pattern) {
-    return stuff is String
-        ? stuff.contains(pattern)
-        : stuff is List<dynamic>
-            ? stuff.where((e) => DFS(e, pattern)).isNotEmpty
-            : stuff is Map<String, dynamic>
-                ? stuff.values.where((e) => DFS(e, pattern)).isNotEmpty
-                : stuff.toString().contains(pattern);
-  }
-
   static (bool, String) SuperDFS(dynamic stuff, Pattern pattern, {parent = ""}) {
     return stuff is String
         ? (stuff.contains(pattern), parent)
@@ -196,7 +186,7 @@ class _TitledReportViewState extends State<TitledReportView> {
                   height: 650,
                   child: SingleChildScrollView(
                     child: StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance.collection("StudentInfo").limit(30).snapshots(),
+                        stream: FirebaseFirestore.instance.collection("StudentInfo").snapshots(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) return Center(child: CircularProgressIndicator());
 

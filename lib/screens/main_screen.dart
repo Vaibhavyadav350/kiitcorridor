@@ -6,7 +6,6 @@ import 'package:kiitcorridor/dashboard/dashboard.dart';
 import 'package:kiitcorridor/screens/postings.dart';
 
 import '../color.dart';
-import '../components/students.dart';
 
 class MainScreen extends StatefulWidget {
   final Widget expandedChild;
