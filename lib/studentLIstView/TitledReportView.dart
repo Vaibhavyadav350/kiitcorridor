@@ -204,7 +204,7 @@ class _TitledReportViewState extends State<TitledReportView> {
                   height: 650,
                   child: SingleChildScrollView(
                     child: OnDemandStream(
-                      streamProvider: () => FirebaseFirestore.instance.collection("StudentInfo"),
+                      streamProvider: () => FirebaseFirestore.instance.collection("StudentInfo").orderBy('name'),
                       builder: (context, docs, state, loadMore) {
                         var sl = docs.map((doc) => StudentInfo.fromFirestore(doc));
                         filters.keys

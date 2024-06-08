@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 enum StreamConnectionStatus { waiting, success, error }
 
 class OnDemandStream extends StatefulWidget {
-  final CollectionReference<Map<String, dynamic>> Function() streamProvider;
+  final Query<Map<String, dynamic>> Function() streamProvider;
   final Widget Function(BuildContext context, Iterable<DocumentSnapshot> docs, StreamConnectionStatus, void Function() loadMore) builder;
   late final Widget Function(BuildContext, StreamConnectionStatus) statusHandle;
   final int cacheJumpSize;
