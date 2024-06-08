@@ -1,35 +1,46 @@
 // ignore_for_file: curly_braces_in_flow_control_structures
 
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kiitcorridor/studentLIstView/OnDemandStream.dart';
 
+dynamic fokc(dynamic Function() unsafeOperation, dynamic def) {
+  try {
+    return unsafeOperation();
+  } catch (e) {
+    return def;
+  }
+}
+
 class StudentInfo {
   final Map<String, dynamic> data;
 
-  dynamic operator [](String key) => data[key] ?? "'$key' is not a valid key";
+  dynamic operator [](String key) => data[key] ?? [];
 
-  String get name => this['name'] ?? "Name Error";
+  String get name => data['name'] ?? "No Name Set";
 
-  String get phone => this['phone'] ?? "Phone Error";
+  String get roll => data['roll'] ?? "No Roll Number Set";
 
-  String get email => this['email'] ?? "Email Error";
+  String get phone => data['phone'] ?? "No Phone Number Set";
 
-  String get address => this['address'] ?? "Address Error";
+  String get email => data['email'] ?? "No Email Set";
 
-  String get photoUrl => this['photoUrl'] ?? "PhotoUrl Error";
+  String get address => data['address'] ?? "No Address Set";
 
-  int get year => int.parse(this['year'] ?? "-1");
+  String get photoUrl => data['photoUrl'] ?? "No Photo Set";
 
-  List<Map<String, dynamic>> _w(dynamic i) => List<Map<String, dynamic>>.from(i);
+  int get year => int.parse(data['year'] ?? "-1");
 
-  List<Map<String, dynamic>> get collegeExperiences => _w(this['CollegeExperience']) ?? [];
+  List<Map<dynamic, dynamic>> _w(dynamic i) => List<Map<dynamic, dynamic>>.from(i);
 
-  List<Map<String, dynamic>> get professionalExperiences => _w(this['ProfessionalExperience']) ?? [];
+  List<Map<dynamic, dynamic>> get collegeExperiences => _w(this['CollegeExperience']) ?? [];
 
-  Map<String, dynamic> semester(index) => _w(this["$index${['st', 'nd', 'rd', 'th'][max(index - 1, 3)]}SemesterPerformance"])[0];
+  List<Map<dynamic, dynamic>> get professionalExperiences => _w(this['ProfessionalExperience']) ?? [];
+
+  Map<dynamic, dynamic> semester(index) => _w(this["$index${['st', 'nd', 'rd', 'th'][max(index - 1, 3)]}SemesterPerformance"])[0];
 
   final String id;
   late final bool hasPaidInternships;
@@ -42,16 +53,19 @@ class StudentInfo {
   int get hashCode => id.hashCode;
 
   StudentInfo(this.id, this.data) {
-    hasPaidInternships = professionalExperiences.where((e) => e['IsItPaid']).isNotEmpty;
+    print(professionalExperiences);
+    hasPaidInternships = professionalExperiences.isEmpty || professionalExperiences.where((e) => e['IsItPaid']).isNotEmpty;
     cgpa = double.parse((data['8thSemesterPerformance'] ??
-            data['7thSemesterPerformance'] ??
-            data['6thSemesterPerformance'] ??
-            data['5thSemesterPerformance'] ??
-            data['4thSemesterPerformance'] ??
-            data['3rdSemesterPerformance'] ??
-            data['2ndSemesterPerformance'] ??
-            data['1stSemesterPerformance'])[0]['Cgpa'] ??
-        '-1.0');
+        data['7thSemesterPerformance'] ??
+        data['6thSemesterPerformance'] ??
+        data['5thSemesterPerformance'] ??
+        data['4thSemesterPerformance'] ??
+        data['3rdSemesterPerformance'] ??
+        data['2ndSemesterPerformance'] ??
+        data['1stSemesterPerformance'] ??
+        [
+          {'Cgpa': '-1.0'}
+        ])[0]['Cgpa']);
   }
 
   bool somethingSomewhereMatches(String string) {
@@ -208,8 +222,13 @@ class _TitledReportViewState extends State<TitledReportView> {
                         selection.keys.where((e) => !students.contains(e)).toList().forEach((e) => selection.remove(e));
                         students.where((e) => !selection.containsKey(e)).forEach((e) => selection[e] = false);
 
-                        Widget buildCell(String t, StudentInfo si) =>
-                            TableCell(verticalAlignment: TableCellVerticalAlignment.middle, child: GestureDetector(child: Text(t), onTap: () => setState(() => focussedStudent = si)));
+                        Widget buildCell(String t, StudentInfo si) => TableCell(
+                            verticalAlignment: TableCellVerticalAlignment.middle,
+                            child: GestureDetector(
+                                child: Text(t),
+                                onTap: () => setState(() {
+                                      focussedStudent = si;
+                                    })));
                         return Column(
                           children: [
                             Table(columnWidths: const {
@@ -283,12 +302,12 @@ class _TitledReportViewState extends State<TitledReportView> {
                                 columns: const [DataColumn(label: Text("")), DataColumn(label: Text(""))],
                                 rows: [
                                   ("Name", "${focussedStudent?.name}"),
-                                  ("Roll Number", "${focussedStudent?['roll']}"),
+                                  ("Roll Number", "${focussedStudent?.roll}"),
                                   ("Phone", "${focussedStudent?.phone}"),
                                   ("Email", "${focussedStudent?.email}"),
                                   ("Year", "${focussedStudent?.year}"),
-                                  ("GitHub", "${focussedStudent?['PublicProfile'][0]['GithubLink']}"),
-                                  ("LinkedIn", "${focussedStudent?['PublicProfile'][0]['LinkedinId']}"),
+                                  ("GitHub", "${fokc(() => focussedStudent?['PublicProfile'][0]['GithubLink'], 'Not set')}"),
+                                  ("LinkedIn", "${fokc(() => focussedStudent?['PublicProfile'][0]['LinkedinId'], 'Not set')}"),
                                   ("FOSS Contributions", "${focussedStudent?['OpenSourceContributions'].length}"),
                                   ("Professional Experiences", "${focussedStudent?.professionalExperiences.length}"),
                                 ].map((e) => DataRow(cells: [DataCell(Text(e.$1)), DataCell(Text(e.$2))])).toList(),
